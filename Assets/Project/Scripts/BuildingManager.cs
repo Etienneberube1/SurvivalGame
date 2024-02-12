@@ -1,15 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
-
-[System.Serializable]
-public enum SelectedBuildType
-{
-    floor,
-    wall,
-}
-
+using TMPro;
 
 public class BuildingManager : MonoBehaviour
 {
@@ -21,17 +13,16 @@ public class BuildingManager : MonoBehaviour
     [SerializeField] private SelectedBuildType currentBuildType;
     [SerializeField] private LayerMask connectorLayer;
 
+    [Header("Destroy Settings")]
+    [SerializeField] private bool isDestroying = false;
+    private Transform lastHitDestroyTransform;
+    private List<Material> LastHitMaterials = new List<Material>();
+
     [Header("Ghost Settings")]
     [SerializeField] private Material ghostMaterialValid;
     [SerializeField] private Material ghostMaterialInvalid;
     [SerializeField] private float connectorOverlapRadius = 1;
     [SerializeField] private float maxGroundAngle = 45f;
-
-    [Header("Ghost Settings")]
-    [SerializeField] private bool _isDestroying = false;
-    private Transform _lastHitDestroyTransform;
-    private List<Material> _lastHitMaterials = new List<Material>();
-
 
     [Header("Internal State")]
     [SerializeField] private bool isBuilding = false;
@@ -40,12 +31,18 @@ public class BuildingManager : MonoBehaviour
     private bool isGhostInValidPosition = false;
     private Transform ModelParent = null;
 
+    [Header("UI")]
+    [SerializeField] private GameObject buildingUI;
+    [SerializeField] private TMP_Text destroyText;
+
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.B))
-            isBuilding = !isBuilding;
+        if (Input.GetKeyDown(KeyCode.Tab))
+        {
+            toggleBuildingUI(!buildingUI.activeInHierarchy);
+        }
 
-        if (isBuilding && _isDestroying)
+        if (isBuilding && !isDestroying)
         {
             ghostBuild();
 
@@ -58,13 +55,12 @@ public class BuildingManager : MonoBehaviour
             ghostBuildGameobject = null;
         }
 
-        if (_isDestroying)
+        if (isDestroying)
         {
-            GhostDestroy();
+            ghostDestroy();
 
             if (Input.GetMouseButtonDown(0))
-                DestroyBuild();
-
+                destroyBuild();
         }
     }
 
@@ -110,6 +106,20 @@ public class BuildingManager : MonoBehaviour
         else
         {
             ghostSeperateBuild();
+
+            if (isGhostInValidPosition)
+            {
+                Collider[] overlapColliders = Physics.OverlapBox(ghostBuildGameobject.transform.position, new Vector3(2f, 2f, 2f), ghostBuildGameobject.transform.rotation);
+                foreach (Collider overlapCollider in overlapColliders)
+                {
+                    if (overlapCollider.gameObject != ghostBuildGameobject && overlapCollider.transform.root.CompareTag("Buildables"))
+                    {
+                        ghostifyModel(ModelParent, ghostMaterialInvalid);
+                        isGhostInValidPosition = false;
+                        return;
+                    }
+                }
+            }
         }
     }
 
@@ -161,13 +171,6 @@ public class BuildingManager : MonoBehaviour
         if (Physics.Raycast(ray, out hit))
         {
             if (currentBuildType == SelectedBuildType.wall)
-            {
-                ghostifyModel(ModelParent, ghostMaterialInvalid);
-                isGhostInValidPosition = false;
-                return;
-            }
-
-            if (hit.collider.transform.root.CompareTag("Buildables"))
             {
                 ghostifyModel(ModelParent, ghostMaterialInvalid);
                 isGhostInValidPosition = false;
@@ -284,7 +287,7 @@ public class BuildingManager : MonoBehaviour
             Destroy(ghostBuildGameobject);
             ghostBuildGameobject = null;
 
-            isBuilding = false;
+            //isBuilding = false;
 
             foreach (Connector connector in newBuild.GetComponentsInChildren<Connector>())
             {
@@ -293,7 +296,7 @@ public class BuildingManager : MonoBehaviour
         }
     }
 
-    private void GhostDestroy()
+    private void ghostDestroy()
     {
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
@@ -301,41 +304,113 @@ public class BuildingManager : MonoBehaviour
         {
             if (hit.transform.root.CompareTag("Buildables"))
             {
-                if (!_lastHitDestroyTransform)
+                if (!lastHitDestroyTransform)
                 {
-                    _lastHitDestroyTransform = hit.transform.root;
+                    lastHitDestroyTransform = hit.transform.root;
 
-                    _lastHitMaterials.Clear();
-                    foreach (MeshRenderer lastHitMeshRenderers in _lastHitDestroyTransform.GetComponentsInChildren<MeshRenderer>())
+                    LastHitMaterials.Clear();
+                    foreach (MeshRenderer lastHitMeshRenderers in lastHitDestroyTransform.GetComponentsInChildren<MeshRenderer>())
                     {
-                        _lastHitMaterials.Add(lastHitMeshRenderers.material);
+                        LastHitMaterials.Add(lastHitMeshRenderers.material);
                     }
 
-                    ghostifyModel(_lastHitDestroyTransform.GetChild(0), ghostMaterialInvalid);
+                    ghostifyModel(lastHitDestroyTransform.GetChild(0), ghostMaterialInvalid);
                 }
-                else if (hit.transform.root != _lastHitDestroyTransform)
+                else if (hit.transform.root != lastHitDestroyTransform)
                 {
-                    ResetLastHitDestroyTransform();
+                    resetLastHitDestroyTransform();
                 }
             }
-            else if (_lastHitDestroyTransform)
+            else if (lastHitDestroyTransform)
             {
-                ResetLastHitDestroyTransform();
+                resetLastHitDestroyTransform();
             }
         }
     }
 
-    private void ResetLastHitDestroyTransform()
+    private void resetLastHitDestroyTransform()
     {
         int counter = 0;
-        foreach (MeshRenderer lastHitMeshRenderers in _lastHitDestroyTransform.GetComponentsInChildren<MeshRenderer>())
+        foreach (MeshRenderer lastHitMeshRenderers in lastHitDestroyTransform.GetComponentsInChildren<MeshRenderer>())
         {
-            
+            lastHitMeshRenderers.material = LastHitMaterials[counter];
+            counter++;
+        }
+
+        lastHitDestroyTransform = null;
+    }
+
+    private void destroyBuild()
+    {
+        if (lastHitDestroyTransform)
+        {
+            foreach (Connector connector in lastHitDestroyTransform.GetComponentsInChildren<Connector>())
+            {
+                connector.gameObject.SetActive(false);
+                connector.updateConnectors(true);
+            }
+
+            Destroy(lastHitDestroyTransform.gameObject);
+
+            destroyBuildingToggle(true);
+            lastHitDestroyTransform = null;
         }
     }
 
-    private void DestroyBuild()
+    public void toggleBuildingUI(bool active)
     {
+        isBuilding = false;
+
+        buildingUI.SetActive(active);
+
+        // Disable your cameras sensitivity.
         
+
+        Cursor.visible = active;
+        Cursor.lockState = active ? CursorLockMode.None : CursorLockMode.Locked;
     }
+
+    public void destroyBuildingToggle(bool fromScript = false)
+    {
+        if (fromScript)
+        {
+            isDestroying = false;
+            destroyText.text = "Destroy Off";
+            destroyText.color = Color.green;
+        }
+        else
+        {
+            isDestroying = !isDestroying;
+            destroyText.text = isDestroying ? "Destroy On" : "Destroy Off";
+            destroyText.color = isDestroying ? Color.red : Color.green;
+            toggleBuildingUI(false);
+        }
+    }
+
+    public void changeBuildTypeButton(string selectedBuildType)
+    {
+        if (System.Enum.TryParse(selectedBuildType, out SelectedBuildType result))
+        {
+            currentBuildType = result;
+        }
+        else
+        {
+            Debug.Log("Build type doesnt exist");
+        }
+    }
+
+    public void startBuildingButton(int buildIndex)
+    {
+        currentBuildingIndex = buildIndex;
+        toggleBuildingUI(false);
+
+        isBuilding = true;
+    }
+}
+
+[System.Serializable]
+public enum SelectedBuildType
+{
+    floor,
+    wall,
 }
