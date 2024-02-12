@@ -363,8 +363,13 @@ public class BuildingManager : MonoBehaviour
 
         buildingUI.SetActive(active);
 
-        // Disable your cameras sensitivity.
-        
+        if (buildingUI.activeInHierarchy)
+        {
+            UIManager.Instance.OpenMenu();
+        }
+        else {
+            UIManager.Instance.CloseMenu();
+        }
 
         Cursor.visible = active;
         Cursor.lockState = active ? CursorLockMode.None : CursorLockMode.Locked;
