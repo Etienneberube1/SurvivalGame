@@ -9,6 +9,8 @@ public class UIManager : Singleton<UIManager>
     [Header("Radial Menu")]
     [SerializeField] private float _radius = 300;
     [SerializeField] private List<GameObject> _uiBuildingObjects = new List<GameObject>();
+    [SerializeField] private TextMeshProUGUI _buildName;
+    [SerializeField] private Image _buildImage;
 
     List<GameObject> _activeBuildingObject = new List<GameObject>();
 
@@ -36,6 +38,11 @@ public class UIManager : Singleton<UIManager>
         _activeBuildingObject.Clear();
     }
 
+    public void ChangeBuildInfo(TextMeshProUGUI name, Image icon)
+    {
+        _buildImage = icon;
+        _buildName.text = name.text;
+    }
 
     private void ArrangeUIObject()
     { 

@@ -273,6 +273,11 @@ public class BuildingManager : MonoBehaviour
                 return floorObjects[currentBuildingIndex];
             case SelectedBuildType.wall:
                 return wallObjects[currentBuildingIndex];
+            case SelectedBuildType.doorframe:
+                return wallObjects[currentBuildingIndex];
+            case SelectedBuildType.halfwall:
+                return wallObjects[currentBuildingIndex];
+
         }
 
         return null;
@@ -418,4 +423,6 @@ public enum SelectedBuildType
 {
     floor,
     wall,
+    halfwall,
+    doorframe,
 }

@@ -89,7 +89,7 @@ GameObject:
   - component: {fileID: 8374697283161879153}
   - component: {fileID: 2745102148672732207}
   m_Layer: 5
-  m_Name: UI_WallObject
+  m_Name: UI_DoorFrameObject 2
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -172,8 +172,8 @@ MonoBehaviour:
   _buildingIcon: {fileID: 8184660320425609126}
   _scaleFactor: 1.5
   _scaleDuration: 0.5
-  _buildType: wall
-  _buildIndex: 0
+  _buildType: doorframe
+  _buildIndex: 1
 --- !u!1 &6773191203261375425
 GameObject:
   m_ObjectHideFlags: 0
@@ -315,9 +315,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Wall
-
-'
+  m_text: Door Frame
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

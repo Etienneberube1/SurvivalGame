@@ -930,8 +930,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _radius: 300
   _uiBuildingObjects:
-  - {fileID: 2915471601975206231, guid: 156d502f9e81d614a9adf45c261df20a, type: 3}
   - {fileID: 2915471601975206231, guid: cb5d9fa8763e73c45bc8e59d242c97e4, type: 3}
+  - {fileID: 2915471601975206231, guid: 156d502f9e81d614a9adf45c261df20a, type: 3}
+  - {fileID: 2915471601975206231, guid: 5ffb91164481d2d47b232ca279221332, type: 3}
+  - {fileID: 2915471601975206231, guid: 193be3367eb97b544ab7f518c241ed63, type: 3}
+  _buildName: {fileID: 1155397601}
+  _buildImage: {fileID: 1783459253}
 --- !u!1 &992360757
 GameObject:
   m_ObjectHideFlags: 0
@@ -1444,6 +1448,8 @@ MonoBehaviour:
   - {fileID: 8325473330135070572, guid: 1339724376134b54da0ba0c9b58bd8d0, type: 3}
   wallObjects:
   - {fileID: 8865340413810040286, guid: cba1f050cda69324db55f95570880b56, type: 3}
+  - {fileID: 2614654526668967948, guid: c835f83cc2550bd4696103565d788226, type: 3}
+  - {fileID: 8414993158815190505, guid: 38b5663c247b93d4386ad850e26af3da, type: 3}
   currentBuildType: 0
   connectorLayer:
     serializedVersion: 2
